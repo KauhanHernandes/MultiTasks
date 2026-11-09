@@ -1,3 +1,166 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom scrollbar styles for beautiful/invisible scrollbars */
+@layer utilities {
+  /* Default subtle scrollbar - visible on hover */
+  .scrollbar-subtle {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+
+  .scrollbar-subtle::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-subtle::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 3px;
+  }
+
+  .scrollbar-subtle::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(96, 165, 250, 0.3), rgba(139, 92, 246, 0.3));
+    border-radius: 3px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+    opacity: 0;
+    transition: opacity 0.2s ease, background 0.2s ease;
+  }
+
+  .scrollbar-subtle:hover::-webkit-scrollbar-thumb,
+  .scrollbar-subtle:active::-webkit-scrollbar-thumb,
+  .scrollbar-subtle:focus-within::-webkit-scrollbar-thumb {
+    opacity: 1;
+    background: linear-gradient(180deg, rgba(96, 165, 250, 0.6), rgba(139, 92, 246, 0.6));
+  }
+
+  .scrollbar-subtle::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, rgba(96, 165, 250, 0.8), rgba(139, 92, 246, 0.8));
+  }
+
+  .scrollbar-subtle::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  /* Ultra-thin "invisible" scrollbar - only shows on hover */
+  .scrollbar-invisible {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+
+  .scrollbar-invisible::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  .scrollbar-invisible::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 2px;
+  }
+
+  .scrollbar-invisible::-webkit-scrollbar-thumb {
+    background: rgba(96, 165, 250, 0.25);
+    border-radius: 2px;
+    border: 1px solid transparent;
+    background-clip: content-box;
+    opacity: 0;
+    transition: opacity 0.15s ease, background 0.15s ease, width 0.15s ease;
+  }
+
+  .scrollbar-invisible:hover::-webkit-scrollbar-thumb,
+  .scrollbar-invisible:active::-webkit-scrollbar-thumb,
+  .scrollbar-invisible:focus-within::-webkit-scrollbar-thumb {
+    opacity: 1;
+    background: rgba(96, 165, 250, 0.5);
+    width: 6px;
+  }
+
+  .scrollbar-invisible::-webkit-scrollbar-thumb:hover {
+    background: rgba(96, 165, 250, 0.7);
+  }
+
+  .scrollbar-invisible::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  /* Glassmorphism scrollbar - beautiful semi-transparent */
+  .scrollbar-glass {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.2) transparent;
+  }
+
+  .scrollbar-glass::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .scrollbar-glass::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.3);
+    border-radius: 4px;
+    backdrop-filter: blur(4px);
+  }
+
+  .scrollbar-glass::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(96, 165, 250, 0.4), rgba(139, 92, 246, 0.4));
+    border-radius: 4px;
+    border: 2px solid rgba(15, 23, 42, 0.3);
+    background-clip: content-box;
+    backdrop-filter: blur(8px);
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
+  }
+
+  .scrollbar-glass:hover::-webkit-scrollbar-thumb,
+  .scrollbar-glass:active::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(96, 165, 250, 0.7), rgba(139, 92, 246, 0.7));
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  }
+
+  .scrollbar-glass::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  /* Minimal line scrollbar - just a thin line */
+  .scrollbar-line {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(100, 116, 139, 0.3) transparent;
+  }
+
+  .scrollbar-line::-webkit-scrollbar {
+    width: 3px;
+    height: 3px;
+  }
+
+  .scrollbar-line::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-line::-webkit-scrollbar-thumb {
+    background: rgba(100, 116, 139, 0.4);
+    border-radius: 1.5px;
+    opacity: 0.5;
+    transition: opacity 0.2s ease, background 0.2s ease;
+  }
+
+  .scrollbar-line:hover::-webkit-scrollbar-thumb,
+  .scrollbar-line:active::-webkit-scrollbar-thumb {
+    opacity: 1;
+    background: rgba(100, 116, 139, 0.7);
+  }
+
+  .scrollbar-line::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+}
+
+/* Global smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Ensure smooth scrolling on all scrollable elements */
+* {
+  scroll-behavior: smooth;
+}

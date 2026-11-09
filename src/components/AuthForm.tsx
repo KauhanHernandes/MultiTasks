@@ -233,10 +233,10 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onLogin, onSignUp, loading, 
           {/* Tab toggle */}
           <div className="flex p-1 bg-gray-800 rounded-xl gap-0.5">
             {([
-              { id: 'login',  icon: LogIn,    label: 'Entrar' },
-              { id: 'signup', icon: UserPlus,  label: 'Criar conta' },
-              { id: 'about',  icon: Info,      label: 'Sobre' },
-            ] as const).map(({ id, icon: Icon, label }) => (
+              { id: 'login',  icon: LogIn,    label: 'Entrar',    activeColor: 'bg-blue-500 text-white shadow-lg shadow-blue-500/30',       inactiveColor: 'text-gray-400 hover:text-white hover:bg-blue-500/10' },
+              { id: 'signup', icon: UserPlus,  label: 'Criar conta', activeColor: 'bg-fuchsia-500 text-white shadow-lg shadow-fuchsia-500/30', inactiveColor: 'text-fuchsia-400 hover:text-white hover:bg-fuchsia-500/10' },
+              { id: 'about',  icon: Info,      label: 'Sobre',     activeColor: 'bg-blue-500 text-white shadow-lg shadow-blue-500/30',       inactiveColor: 'text-gray-400 hover:text-white hover:bg-blue-500/10' },
+            ] as const).map(({ id, icon: Icon, label, activeColor, inactiveColor }) => (
               <button
                 key={id}
                 type="button"
@@ -245,9 +245,7 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onLogin, onSignUp, loading, 
                   setValidationError(null);
                 }}
                 className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-medium transition-all ${
-                  tab === id
-                    ? 'bg-blue-500 text-white shadow-lg shadow-blue-500/30'
-                    : 'text-gray-400 hover:text-white'
+                  tab === id ? activeColor : inactiveColor
                 }`}
               >
                 <Icon className="w-3.5 h-3.5" />
@@ -259,14 +257,14 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onLogin, onSignUp, loading, 
           {/* Conditional content */}
           {tab === 'about' ? (
             <>
-              <div className="max-h-[60vh] sm:max-h-[70vh] overflow-y-auto pr-1 -mr-1 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-700">
+              <div className="max-h-[60vh] sm:max-h-[70vh] overflow-y-auto pr-1 -mr-1 scrollbar-invisible">
                 <AboutContent />
               </div>
 
               <button
                 type="button"
                 onClick={() => setTab('signup')}
-                className="w-full py-3 bg-blue-500 hover:bg-blue-600 active:scale-95 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-blue-500/25 flex items-center justify-center gap-2"
+                className="w-full py-3 bg-fuchsia-500 hover:bg-fuchsia-600 active:scale-95 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-fuchsia-500/25 flex items-center justify-center gap-2"
               >
                 Criar minha conta grátis
                 <ChevronRight className="w-4 h-4" />
@@ -328,7 +326,11 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onLogin, onSignUp, loading, 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-2 py-3 px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-semibold text-sm transition-all shadow-lg shadow-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95"
+                className={`w-full flex items-center justify-center gap-2 py-3 px-4 text-white rounded-xl font-semibold text-sm transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 ${
+                  tab === 'signup'
+                    ? 'bg-fuchsia-500 hover:bg-fuchsia-600 shadow-fuchsia-500/30'
+                    : 'bg-blue-500 hover:bg-blue-600 shadow-blue-500/30'
+                }`}
               >
                 {loading ? (
                   <>

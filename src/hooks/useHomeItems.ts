@@ -13,7 +13,7 @@ export const useHomeItems = (month: string) => {
         .select('*')
         .eq('month', month)
         .order('created_at', { ascending: false });
-      
+
       if (error) throw error;
       setItems(data || []);
     } catch (error) {
@@ -24,53 +24,48 @@ export const useHomeItems = (month: string) => {
   };
 
   const addItem = async (name: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('home_items')
-        .insert({
-          name,
-          completed: false,
-          month,
-          user_id: (await supabase.auth.getUser()).data.user?.id,
-        })
-        .select()
-        .single();
-      
-      if (error) throw error;
-      setItems(prev => [data, ...prev]);
-    } catch (error) {
-      console.error('Error adding home item:', error);
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Usuário não autenticado');
+
+    const { data, error } = await supabase
+      .from('home_items')
+      .insert({
+        name,
+        completed: false,
+        month,
+        user_id: user.id,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('[Home] Insert error:', error);
+      throw new Error(`Erro: ${error.message} (code: ${error.code}, hint: ${error.hint || 'none'})`);
     }
+    setItems(prev => [data, ...prev]);
+    return data;
   };
 
   const updateItem = async (id: string, updates: Partial<HomeItem>) => {
-    try {
-      const { error } = await supabase
-        .from('home_items')
-        .update(updates)
-        .eq('id', id);
-      
-      if (error) throw error;
-      setItems(prev => prev.map(item => 
-        item.id === id ? { ...item, ...updates } : item
-      ));
-    } catch (error) {
-      console.error('Error updating home item:', error);
-    }
+    const { error } = await supabase
+      .from('home_items')
+      .update(updates)
+      .eq('id', id);
+
+    if (error) throw error;
+    setItems(prev => prev.map(item =>
+      item.id === id ? { ...item, ...updates } : item
+    ));
   };
 
   const deleteItem = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('home_items')
-        .delete()
-        .eq('id', id);
-      
-      if (error) throw error;
-      setItems(prev => prev.filter(item => item.id !== id));
-    } catch (error) {
-      console.error('Error deleting home item:', error);
-    }
+    const { error } = await supabase
+      .from('home_items')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    setItems(prev => prev.filter(item => item.id !== id));
   };
 
   const toggleCompleted = async (id: string) => {

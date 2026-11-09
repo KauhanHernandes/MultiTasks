@@ -89,21 +89,31 @@ export const InventoryList: React.FC = () => {
   const expiringSoonCount = items.filter(i => isExpiringSoon(i.expiry_date ?? null)).length;
 
   // ── Handlers ─────────────────────────────────────────────────────────────────
+  const [actionError, setActionError] = useState<string | null>(null);
+
   const clearAllItems = async () => {
-    for (const item of items) await deleteItem(item.id);
-    setShowClearConfirm(false);
+    try {
+      for (const item of items) await deleteItem(item.id);
+      setShowClearConfirm(false);
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Erro ao limpar inventário');
+    }
   };
 
   const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault();
+    setActionError(null);
     if (newItem.name.trim()) {
-      await addItem(
-      newItem.name.trim(),
-      parseInt(newItem.quantity) || 1,
-      newItem.expiryDate || undefined,
-      // remova essa linha e ajuste o hook useInventoryItems para aceitar categoryId
-      );
-      setNewItem({ name: '', quantity: '1', expiryDate: '', categoryId: newItem.categoryId });
+      try {
+        await addItem(
+          newItem.name.trim(),
+          parseInt(newItem.quantity) || 1,
+          newItem.expiryDate || undefined,
+        );
+        setNewItem({ name: '', quantity: '1', expiryDate: '', categoryId: newItem.categoryId });
+      } catch (err) {
+        setActionError(err instanceof Error ? err.message : 'Erro ao adicionar item');
+      }
     }
   };
 
@@ -114,12 +124,16 @@ export const InventoryList: React.FC = () => {
 
   const handleEditSave = async () => {
     if (editingId && editItem.name.trim()) {
-      await updateItem(editingId, {
-        name:        editItem.name.trim(),
-        quantity:    parseInt(editItem.quantity) || 1,
-        expiry_date: editItem.expiryDate || undefined,
-      });
-      setEditingId(null);
+      try {
+        await updateItem(editingId, {
+          name:        editItem.name.trim(),
+          quantity:    parseInt(editItem.quantity) || 1,
+          expiry_date: editItem.expiryDate || undefined,
+        });
+        setEditingId(null);
+      } catch (err) {
+        setActionError(err instanceof Error ? err.message : 'Erro ao salvar alterações');
+      }
     }
   };
 
@@ -135,8 +149,12 @@ export const InventoryList: React.FC = () => {
   };
 
   const deleteSelected = async () => {
-    for (const id of selectedItems) await deleteItem(id);
-    setSelectedItems(new Set());
+    try {
+      for (const id of selectedItems) await deleteItem(id);
+      setSelectedItems(new Set());
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Erro ao excluir itens');
+    }
   };
 
   const toggleCategoryOpen = (catId: string) => {
@@ -171,6 +189,18 @@ export const InventoryList: React.FC = () => {
 
   return (
     <div className="space-y-4">
+
+      {/* Error Toast */}
+      {actionError && (
+        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-red-400 text-sm">{actionError}</p>
+            <button onClick={() => setActionError(null)} className="text-red-400 hover:text-red-300 transition-colors p-1">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── Header ──────────────────────────────────────────────────── */}
       <div className="bg-gray-900 rounded-2xl border border-gray-800 p-5">

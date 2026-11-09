@@ -13,21 +13,38 @@ export const HomeList: React.FC<HomeListProps> = ({ month }) => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editItemName, setEditItemName] = useState('');
   const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   const clearAllItems = async () => {
-    for (const item of items) await deleteItem(item.id);
-    setShowClearConfirm(false);
+    try {
+      for (const item of items) await deleteItem(item.id);
+      setShowClearConfirm(false);
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : 'Erro ao limpar lista');
+    }
   };
 
   const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (newItemName.trim()) { await addItem(newItemName.trim()); setNewItemName(''); }
+    setActionError(null);
+    if (newItemName.trim()) {
+      try {
+        await addItem(newItemName.trim());
+        setNewItemName('');
+      } catch (err) {
+        setActionError(err instanceof Error ? err.message : 'Erro ao adicionar tarefa');
+      }
+    }
   };
 
   const handleEditSave = async () => {
     if (editingId && editItemName.trim()) {
-      await updateItem(editingId, { name: editItemName.trim() });
-      setEditingId(null);
+      try {
+        await updateItem(editingId, { name: editItemName.trim() });
+        setEditingId(null);
+      } catch (err) {
+        setActionError(err instanceof Error ? err.message : 'Erro ao salvar alterações');
+      }
     }
   };
 
@@ -49,6 +66,18 @@ export const HomeList: React.FC<HomeListProps> = ({ month }) => {
 
   return (
     <div className="space-y-4">
+
+      {/* Error Toast */}
+      {actionError && (
+        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="flex items-center justify-between gap-4">
+            <p className="text-red-400 text-sm">{actionError}</p>
+            <button onClick={() => setActionError(null)} className="text-red-400 hover:text-red-300 transition-colors p-1">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ── Header ──────────────────────────────────────────────── */}
       <div className="bg-gray-900 rounded-2xl border border-gray-800 p-5">

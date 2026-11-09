@@ -13,7 +13,7 @@ export const useMarketItems = (month: string) => {
         .select('*')
         .eq('month', month)
         .order('created_at', { ascending: false });
-      
+
       if (error) throw error;
       setItems(data || []);
     } catch (error) {
@@ -24,57 +24,52 @@ export const useMarketItems = (month: string) => {
   };
 
   const addItem = async (name: string, price: number, quantity: number, sectionName: string = '') => {
-    try {
-      const { data, error } = await supabase
-        .from('market_items')
-        .insert({
-          name,
-          price,
-          quantity,
-          completed: false,
-          month,
-          section_name: sectionName,
-          is_finalized: false,
-          user_id: (await supabase.auth.getUser()).data.user?.id,
-        })
-        .select()
-        .single();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('Usuário não autenticado');
 
-      if (error) throw error;
-      setItems(prev => [data, ...prev]);
-    } catch (error) {
-      console.error('Error adding market item:', error);
+    const { data, error } = await supabase
+      .from('market_items')
+      .insert({
+        name,
+        price,
+        quantity,
+        completed: false,
+        month,
+        section_name: sectionName,
+        is_finalized: false,
+        user_id: user.id,
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.error('[Market] Insert error:', error);
+      throw new Error(`Erro: ${error.message} (code: ${error.code}, hint: ${error.hint || 'none'})`);
     }
+    setItems(prev => [data, ...prev]);
+    return data;
   };
 
   const updateItem = async (id: string, updates: Partial<MarketItem>) => {
-    try {
-      const { error } = await supabase
-        .from('market_items')
-        .update(updates)
-        .eq('id', id);
-      
-      if (error) throw error;
-      setItems(prev => prev.map(item => 
-        item.id === id ? { ...item, ...updates } : item
-      ));
-    } catch (error) {
-      console.error('Error updating market item:', error);
-    }
+    const { error } = await supabase
+      .from('market_items')
+      .update(updates)
+      .eq('id', id);
+
+    if (error) throw error;
+    setItems(prev => prev.map(item =>
+      item.id === id ? { ...item, ...updates } : item
+    ));
   };
 
   const deleteItem = async (id: string) => {
-    try {
-      const { error } = await supabase
-        .from('market_items')
-        .delete()
-        .eq('id', id);
-      
-      if (error) throw error;
-      setItems(prev => prev.filter(item => item.id !== id));
-    } catch (error) {
-      console.error('Error deleting market item:', error);
-    }
+    const { error } = await supabase
+      .from('market_items')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+    setItems(prev => prev.filter(item => item.id !== id));
   };
 
   const toggleCompleted = async (id: string) => {
@@ -92,7 +87,7 @@ export const useMarketItems = (month: string) => {
     return sum + (item.price * item.quantity);
   }, 0);
 
-  const completedValue = totalValue; // Auto-update: all added items count as spent
+  const completedValue = totalValue;
 
   return {
     items,

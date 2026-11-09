@@ -1,0 +1,88 @@
+name: Supabase Keepalive
+
+on:
+  schedule:
+    # Runs every 6 days at 03:00 UTC (avoids peak hours, stays well within 7-day limit)
+    - cron: '0 3 */6 * *'
+  # Allow manual trigger for testing
+  workflow_dispatch:
+
+# Minimal permissions - only what's needed
+permissions:
+  contents: read
+
+jobs:
+  keepalive:
+    name: Ping Supabase Keepalive
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - name: Ping Supabase Keepalive Function
+        id: keepalive
+        run: |
+          # Supabase project URL and anon key from secrets
+          SUPABASE_URL="${{ secrets.SUPABASE_URL }}"
+          SUPABASE_ANON_KEY="${{ secrets.SUPABASE_ANON_KEY }}"
+
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "❌ Missing SUPABASE_URL or SUPABASE_ANON_KEY secrets"
+            exit 1
+          fi
+
+          echo "🔄 Calling Supabase keepalive function..."
+
+          # Call the update_keepalive RPC function
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            -X POST "${SUPABASE_URL}/rest/v1/rpc/update_keepalive" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: return=representation" \
+            -d '{}')
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | head -n -1)
+
+          if [ "$HTTP_CODE" -eq 200 ] || [ "$HTTP_CODE" -eq 201 ]; then
+            echo "✅ Keepalive successful (HTTP $HTTP_CODE)"
+            echo "$BODY"
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "response=$BODY" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Keepalive failed (HTTP $HTTP_CODE)"
+            echo "$BODY"
+            echo "status=failed" >> $GITHUB_OUTPUT
+            echo "response=$BODY" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+
+      - name: Log Result
+        if: always()
+        run: |
+          echo "📊 Keepalive job completed"
+          echo "Status: ${{ steps.keepalive.outputs.status }}"
+          if [ "${{ steps.keepalive.outputs.status }}" = "success" ]; then
+            echo "Response: ${{ steps.keepalive.outputs.response }}"
+          fi
+
+      # Optional: Notify on failure (only if you add SLACK_WEBHOOK_URL secret)
+      - name: Notify on Failure
+        if: failure() && env.SLACK_WEBHOOK_URL != ''
+        uses: slackapi/slack-github-action@v1.25.0
+        with:
+          payload: |
+            {
+              "text": "⚠️ Supabase Keepalive Failed",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Supabase Keepalive Failed*\nRepository: ${{ github.repository }}\nWorkflow: ${{ github.workflow }}\nRun: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

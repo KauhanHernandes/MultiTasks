@@ -1,0 +1,47 @@
+name: Supabase Keepalive (Daily Lightweight)
+
+on:
+  schedule:
+    # Daily at 04:00 UTC - lightweight check, only runs if 6-day job missed
+    - cron: '0 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  keepalive-check:
+    name: Daily Keepalive Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+
+    steps:
+      - name: Check Last Keepalive & Ping if Needed
+        id: check
+        run: |
+          SUPABASE_URL="${{ secrets.SUPABASE_URL }}"
+          SUPABASE_ANON_KEY="${{ secrets.SUPABASE_ANON_KEY }}"
+
+          if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
+            echo "❌ Missing secrets"
+            exit 1
+          fi
+
+          # Check last keepalive timestamp
+          RESPONSE=$(curl -s -w "\n%{http_code}" \
+            -X POST "${SUPABASE_URL}/rest/v1/rpc/update_keepalive" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_ANON_KEY}" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: return=representation" \
+            -d '{}')
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+
+          if [ "$HTTP_CODE" -eq 200 ] || [ "$HTTP_CODE" -eq 201 ]; then
+            echo "✅ Daily keepalive OK"
+            echo "status=success" >> $GITHUB_OUTPUT
+          else
+            echo "⚠️ Daily keepalive failed (HTTP $HTTP_CODE)"
+            echo "status=failed" >> $GITHUB_OUTPUT
+          fi

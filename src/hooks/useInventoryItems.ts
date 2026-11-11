@@ -22,7 +22,7 @@ export const useInventoryItems = () => {
     }
   };
 
-  const addItem = async (name: string, quantity: number, expiryDate?: string) => {
+  const addItem = async (name: string, quantity: number) => {
     const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM format
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('Usuário não autenticado');
@@ -32,7 +32,6 @@ export const useInventoryItems = () => {
       .insert({
         name,
         quantity,
-        expiry_date: expiryDate || null,
         month: currentMonth,
         user_id: user.id,
       })

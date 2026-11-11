@@ -18,7 +18,7 @@ export const useSimpleMarketItems = (month: string) => {
   const fetchItems = async () => {
     try {
       const { data, error } = await supabase
-        .from('simple_market_items')
+        .from('market_items')
         .select('*')
         .eq('month', month)
         .order('created_at', { ascending: false });
@@ -37,7 +37,7 @@ export const useSimpleMarketItems = (month: string) => {
     if (!user) throw new Error('Usuário não autenticado');
 
     const { data, error } = await supabase
-      .from('simple_market_items')
+      .from('market_items')
       .insert({
         name,
         quantity,
@@ -58,7 +58,7 @@ export const useSimpleMarketItems = (month: string) => {
 
   const updateItem = async (id: string, updates: Partial<SimpleMarketItem>) => {
     const { error } = await supabase
-      .from('simple_market_items')
+      .from('market_items')
       .update(updates)
       .eq('id', id);
 
@@ -70,7 +70,7 @@ export const useSimpleMarketItems = (month: string) => {
 
   const deleteItem = async (id: string) => {
     const { error } = await supabase
-      .from('simple_market_items')
+      .from('market_items')
       .delete()
       .eq('id', id);
 

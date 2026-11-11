@@ -9,7 +9,7 @@ export const useHomeItems = (month: string) => {
   const fetchItems = async () => {
     try {
       const { data, error } = await supabase
-        .from('home_items')
+        .from('home_tasks')
         .select('*')
         .eq('month', month)
         .order('created_at', { ascending: false });
@@ -28,7 +28,7 @@ export const useHomeItems = (month: string) => {
     if (!user) throw new Error('Usuário não autenticado');
 
     const { data, error } = await supabase
-      .from('home_items')
+      .from('home_tasks')
       .insert({
         name,
         completed: false,
@@ -48,7 +48,7 @@ export const useHomeItems = (month: string) => {
 
   const updateItem = async (id: string, updates: Partial<HomeItem>) => {
     const { error } = await supabase
-      .from('home_items')
+      .from('home_tasks')
       .update(updates)
       .eq('id', id);
 
@@ -60,7 +60,7 @@ export const useHomeItems = (month: string) => {
 
   const deleteItem = async (id: string) => {
     const { error } = await supabase
-      .from('home_items')
+      .from('home_tasks')
       .delete()
       .eq('id', id);
 

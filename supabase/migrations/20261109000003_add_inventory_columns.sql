@@ -4,6 +4,7 @@
   1. Changes
     - Add `expiry_date` column (date, nullable)
     - Add `category_id` column (text, nullable)
+    - Add `month` column (text, nullable) for monthly grouping
     - Add indexes for better query performance
 */
 
@@ -26,6 +27,17 @@ BEGIN
     WHERE table_name = 'inventory_items' AND column_name = 'category_id'
   ) THEN
     ALTER TABLE inventory_items ADD COLUMN category_id text;
+  END IF;
+END $$;
+
+-- Add month column if not exists (YYYY-MM format)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_name = 'inventory_items' AND column_name = 'month'
+  ) THEN
+    ALTER TABLE inventory_items ADD COLUMN month text;
   END IF;
 END $$;
 
